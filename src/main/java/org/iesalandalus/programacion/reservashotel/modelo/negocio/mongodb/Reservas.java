@@ -123,6 +123,26 @@ public class Reservas implements IReservas {
         return reservasHuesped;
     }
 
+    public List<Reserva> getReservas(Habitacion habitacion){
+
+        if (habitacion == null) {
+            throw new NullPointerException("ERROR: No se pueden buscar reservas de una habitación nula.");
+        }
+
+        List<Reserva> reservasHabitacion = new ArrayList<>();
+        Iterator<Reserva> iterador = get().iterator();
+        int i = 0;
+
+        while (iterador.hasNext()) {
+            Reserva reserva = get().get(i);
+            if (reserva.getHabitacion().getIdentificador().equals(habitacion.getIdentificador())) {
+                reservasHabitacion.add(new Reserva(reserva));
+            }
+            i++;
+        }
+        return reservasHabitacion;
+    }
+
     public List<Reserva> getReservasFuturas(Habitacion habitacion) {
         if (habitacion == null)
             throw new NullPointerException("ERROR: No se pueden buscar reservas de una habitación nula.");
@@ -164,4 +184,6 @@ public class Reservas implements IReservas {
         }
         reserva.setCheckOut(fecha);
     }
+    public void comenzar(){}
+    public void terminar(){}
 }

@@ -105,4 +105,6 @@ public class Habitaciones implements IHabitaciones {
         }
         return counter;
     }
+    public void comenzar(){}
+    public void terminar(){}
 }

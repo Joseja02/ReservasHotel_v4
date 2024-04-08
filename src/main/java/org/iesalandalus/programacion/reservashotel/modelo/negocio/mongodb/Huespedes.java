@@ -77,4 +77,6 @@ public class Huespedes implements IHuespedes {
         }
         coleccionHuespedes.remove(huesped);
     }
+    public void comenzar(){}
+    public void terminar(){}
 }
