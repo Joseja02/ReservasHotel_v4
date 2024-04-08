@@ -1,7 +1,6 @@
-package org.iesalandalus.programacion.reservashotel.modelo.negocio.memoria;
+package org.iesalandalus.programacion.reservashotel.modelo.negocio.mongodb;
 
 import org.iesalandalus.programacion.reservashotel.modelo.dominio.Huesped;
-import org.iesalandalus.programacion.reservashotel.modelo.dominio.Reserva;
 import org.iesalandalus.programacion.reservashotel.modelo.negocio.IHuespedes;
 
 import javax.naming.OperationNotSupportedException;
