@@ -55,12 +55,12 @@ public class MongoDB {
     public static final String CHECKOUT = "checkout";
     public static final String PRECIO_RESERVA = "precio_reserva";
     public static final String NUMERO_PERSONAS = "numero_personas";
-    private MongoClient conexion;
+    private static MongoClient conexion;
 
     private MongoDB(){
 
     }
-    public MongoDatabase getBD(){
+    public static MongoDatabase getBD(){
         if (conexion == null) {
             establecerConexion();
         }
@@ -68,7 +68,7 @@ public class MongoDB {
         return conexion.getDatabase(BD);
     }
 
-    private void establecerConexion(){
+    private static void establecerConexion(){
         String connectionString;
         ServerApi serverApi;
         MongoClientSettings settings;
@@ -115,14 +115,14 @@ public class MongoDB {
         System.out.println("Conexión a MongoDB realizada correctamente.");
 
     }
-    public void cerrarConexion(){
+    public static void cerrarConexion(){
         if (conexion != null) {
             conexion.close();
             conexion = null;
             System.out.println("Conexión a MongoDB cerrada.");
         }
     }
-    public Document getDocumento(Huesped huesped){
+    public static Document getDocumento(Huesped huesped){
         if (huesped == null) {
             return null;
         }
@@ -133,13 +133,13 @@ public class MongoDB {
         LocalDate fechaNacimiento = huesped.getFechaNacimiento();
         return new Document().append(NOMBRE, nombre).append(DNI, dni).append(TELEFONO, telefono).append(CORREO, correo).append(FECHA_NACIMIENTO, fechaNacimiento);
     }
-    public Huesped getHuesped(Document documentoHuesped){
+    public static Huesped getHuesped(Document documentoHuesped){
         if (documentoHuesped == null) {
             return null;
         }
         return new Huesped(documentoHuesped.getString(NOMBRE), documentoHuesped.getString(DNI), documentoHuesped.getString(TELEFONO), documentoHuesped.getString(CORREO), (LocalDate) documentoHuesped.get(FECHA_NACIMIENTO));
     }
-    public Document getDocumento(Habitacion habitacion){
+    public static Document getDocumento(Habitacion habitacion){
         if (habitacion == null) {
             return null;
         }
@@ -168,7 +168,7 @@ public class MongoDB {
         }
         return dHabitacion;
     }
-    public Habitacion getHabitacion(Document documentoHuesped){
+    public static Habitacion getHabitacion(Document documentoHuesped){
         Habitacion habitacion = null;
 
         if (documentoHuesped == null) {
@@ -187,7 +187,7 @@ public class MongoDB {
         }
         return habitacion;
     }
-    public Reserva getReserva(Document documentoReserva){
+    public static Reserva getReserva(Document documentoReserva){
         if (documentoReserva == null){
             return null;
         }
@@ -203,7 +203,7 @@ public class MongoDB {
 
         return new Reserva(huesped, habitacion,(Regimen) documentoReserva.get(REGIMEN), fechaInicioReserva, fechaFinReserva, documentoReserva.getInteger(NUMERO_PERSONAS));
     }
-    public Document getDocumento(Reserva reserva){
+    public static Document getDocumento(Reserva reserva){
         if (reserva == null) {
             return null;
         }

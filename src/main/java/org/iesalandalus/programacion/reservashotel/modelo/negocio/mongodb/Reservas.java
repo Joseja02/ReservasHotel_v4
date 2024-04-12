@@ -1,57 +1,51 @@
 package org.iesalandalus.programacion.reservashotel.modelo.negocio.mongodb;
 
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
+import org.bson.Document;
 import org.iesalandalus.programacion.reservashotel.modelo.dominio.*;
 import org.iesalandalus.programacion.reservashotel.modelo.negocio.IReservas;
+import org.iesalandalus.programacion.reservashotel.modelo.negocio.mongodb.utilidades.MongoDB;
 
 import javax.naming.OperationNotSupportedException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
 public class Reservas implements IReservas {
-    private List<Reserva> coleccionReservas;
+    private MongoCollection<Document> coleccionReservas;
+    private final String COLECCION = "reservas";
 
     public Reservas() {
-        coleccionReservas = new ArrayList<>();
     }
 
     public List<Reserva> get() {
-        return copiaProfundaReservaes();
+        List<Reserva> listaReservas = new ArrayList<>();
+        coleccionReservas.find().forEach((docReservas) -> {
+            Reserva reserva = MongoDB.getReserva(docReservas);
+            listaReservas.add(reserva);
+        });
+        listaReservas.sort(Comparator.comparing(Reserva::getFechaInicioReserva));
+
+        return listaReservas;
     }
-
-    private List<Reserva> copiaProfundaReservaes() {
-
-        List<Reserva> copiaReservas = new ArrayList<>();
-
-        Iterator<Reserva> iterador = coleccionReservas.iterator();
-        while (iterador.hasNext()) {
-            Reserva reserva = iterador.next();
-            copiaReservas.add(new Reserva(reserva));
-        }
-        return copiaReservas;
-    }
-
-    public int getTamano() {
-        int counter = 0;
-        Iterator<Reserva> iterador = coleccionReservas.iterator();
-        while (iterador.hasNext()){
-            iterador.next();
-            counter++;
-        }
-        return counter;
-    }
+    public int getTamano() { return (int) coleccionReservas.countDocuments(); }
 
     public void insertar(Reserva reserva) throws OperationNotSupportedException {
 
         if (reserva == null) {
             throw new NullPointerException("ERROR: No se puede insertar una reserva nula.");
         }
-        if (coleccionReservas.contains(reserva)) {
+
+        if (coleccionReservas.find(Filters.eq(reserva.getHabitacion().getIdentificador(), reserva.getFechaInicioReserva())).first().isEmpty()) {
+            coleccionReservas.insertOne(MongoDB.getDocumento(reserva));
+        } else {
             throw new OperationNotSupportedException("ERROR: Ya existe una reserva igual.");
         }
-        coleccionReservas.add(reserva);
     }
 
     public Reserva buscar(Reserva reserva) {
@@ -60,11 +54,12 @@ public class Reservas implements IReservas {
             throw new NullPointerException("ERROR: No se puede buscar una reserva nula.");
         }
 
-        if (coleccionReservas.contains(reserva)) {
-            int i = coleccionReservas.indexOf(reserva);
-            reserva = coleccionReservas.get(i);
-            return new Reserva(reserva);
+        Document documentoReserva = coleccionReservas.find(Filters.eq(reserva.getHabitacion().getIdentificador(), reserva.getFechaInicioReserva())).first();
+
+        if (!documentoReserva.isEmpty()) {
+            return MongoDB.getReserva(documentoReserva);
         } else {
+            System.out.println("Reserva no encontrada");
             return null;
         }
     }
@@ -74,10 +69,12 @@ public class Reservas implements IReservas {
             throw new NullPointerException("ERROR: No se puede borrar una reserva nula.");
         }
 
-        if (!coleccionReservas.contains(reserva)) {
+        Document documentoReserva = coleccionReservas.find(Filters.eq(reserva.getHabitacion().getIdentificador(), reserva.getFechaInicioReserva())).first();
+
+        if (documentoReserva.isEmpty()) {
             throw new OperationNotSupportedException("ERROR: No existe ninguna reserva como la indicada.");
         }
-        coleccionReservas.remove(reserva);
+        coleccionReservas.deleteOne(documentoReserva);
     }
 
     public List<Reserva> getReservas(Huesped huesped) {
@@ -184,6 +181,13 @@ public class Reservas implements IReservas {
         }
         reserva.setCheckOut(fecha);
     }
-    public void comenzar(){}
-    public void terminar(){}
+    public void comenzar(){
+        MongoDatabase database = MongoDB.getBD();
+        coleccionReservas = database.getCollection(COLECCION);
+        System.out.println("Colección reservas obtenida");
+    }
+    public void terminar(){
+        MongoDB.cerrarConexion();
+        System.out.println("Conexión con MongoDB cerrada con éxito.");
+    }
 }

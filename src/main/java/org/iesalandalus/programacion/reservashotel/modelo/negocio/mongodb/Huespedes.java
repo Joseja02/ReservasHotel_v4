@@ -1,55 +1,51 @@
 package org.iesalandalus.programacion.reservashotel.modelo.negocio.mongodb;
 
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
+import org.bson.Document;
 import org.iesalandalus.programacion.reservashotel.modelo.dominio.Huesped;
 import org.iesalandalus.programacion.reservashotel.modelo.negocio.IHuespedes;
+import org.iesalandalus.programacion.reservashotel.modelo.negocio.mongodb.utilidades.MongoDB;
 
 import javax.naming.OperationNotSupportedException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import javax.print.Doc;
+import java.util.*;
 
 public class Huespedes implements IHuespedes {
-    private List<Huesped> coleccionHuespedes;
+    private MongoCollection<Document> coleccionHuespedes;
+    private final String COLECCION = "huespedes";
 
     public Huespedes() {
-        coleccionHuespedes = new ArrayList<>();
+
     }
 
     public List<Huesped> get() {
-        return copiaProfundaHuespedes();
+        List<Huesped> listaHuespedes = new ArrayList<>();
+        coleccionHuespedes.find().forEach((docHuesped) -> {
+            Huesped huesped = MongoDB.getHuesped(docHuesped);
+            listaHuespedes.add(huesped);
+        });
+        listaHuespedes.sort(Comparator.comparing(Huesped::getDni));
+
+        return listaHuespedes;
     }
 
-    private List<Huesped> copiaProfundaHuespedes() {
-
-        List<Huesped> copiaHuespedes = new ArrayList<>();
-
-        Iterator<Huesped> iterador = coleccionHuespedes.iterator();
-        while (iterador.hasNext()) {
-            Huesped huesped = iterador.next();
-            copiaHuespedes.add(new Huesped(huesped));
-        }
-        return copiaHuespedes;
-    }
-
-    public int getTamano() {
-        int counter = 0;
-        Iterator<Huesped> iterador = coleccionHuespedes.iterator();
-        while (iterador.hasNext()){
-            iterador.next();
-            counter++;
-        }
-        return counter;
-    }
+    public int getTamano() { return (int) coleccionHuespedes.countDocuments(); }
 
     public void insertar(Huesped huesped) throws OperationNotSupportedException {
 
         if (huesped == null) {
             throw new NullPointerException("ERROR: No se puede insertar un huésped nulo.");
         }
-        if (coleccionHuespedes.contains(huesped)) {
+
+        if (coleccionHuespedes.find(Filters.eq(huesped.getDni())).first().isEmpty()) {
+            coleccionHuespedes.insertOne(MongoDB.getDocumento(huesped));
+        } else {
             throw new OperationNotSupportedException("ERROR: Ya existe un huésped con ese dni.");
         }
-        coleccionHuespedes.add(huesped);
     }
 
     public Huesped buscar(Huesped huesped) {
@@ -57,11 +53,12 @@ public class Huespedes implements IHuespedes {
             throw new NullPointerException("ERROR: No se puede buscar un huésped nulo.");
         }
 
-        if (coleccionHuespedes.contains(huesped)) {
-            int i = coleccionHuespedes.indexOf(huesped);
-            huesped = coleccionHuespedes.get(i);
-            return new Huesped(huesped);
+        Document documentoHuesped = coleccionHuespedes.find(MongoDB.getDocumento(huesped)).first();
+
+        if (!documentoHuesped.isEmpty()) {
+            return MongoDB.getHuesped(documentoHuesped);
         } else {
+            System.out.println("Huésped no encontrado");
             return null;
         }
     }
@@ -72,11 +69,20 @@ public class Huespedes implements IHuespedes {
             throw new NullPointerException("ERROR: No se puede borrar un huésped nulo.");
         }
 
-        if (!coleccionHuespedes.contains(huesped)) {
+        Document documentoHuesped = coleccionHuespedes.find(Filters.eq(huesped.getDni())).first();
+
+        if (documentoHuesped.isEmpty()) {
             throw new OperationNotSupportedException("ERROR: No existe ningún huésped como el indicado.");
         }
-        coleccionHuespedes.remove(huesped);
+        coleccionHuespedes.deleteOne(documentoHuesped);
     }
-    public void comenzar(){}
-    public void terminar(){}
+    public void comenzar(){
+        MongoDatabase database = MongoDB.getBD();
+        coleccionHuespedes = database.getCollection(COLECCION);
+        System.out.println("Colección huespedes obtenida");
+    }
+    public void terminar(){
+        MongoDB.cerrarConexion();
+        System.out.println("Conexión con MongoDB cerrada con éxito.");
+    }
 }

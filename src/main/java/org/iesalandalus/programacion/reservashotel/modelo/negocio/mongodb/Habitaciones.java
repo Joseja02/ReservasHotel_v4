@@ -1,75 +1,62 @@
 package org.iesalandalus.programacion.reservashotel.modelo.negocio.mongodb;
 
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Filters;
+import org.bson.Document;
 import org.iesalandalus.programacion.reservashotel.modelo.dominio.*;
 import org.iesalandalus.programacion.reservashotel.modelo.negocio.IHabitaciones;
+import org.iesalandalus.programacion.reservashotel.modelo.negocio.mongodb.utilidades.MongoDB;
 
 import javax.naming.OperationNotSupportedException;
+import javax.print.Doc;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
 public class Habitaciones implements IHabitaciones {
-    private List<Habitacion> coleccionHabitaciones;
+    private MongoCollection<Document> coleccionHabitaciones;
+    private final String COLECCION = "habitaciones";
 
     public Habitaciones() {
-        coleccionHabitaciones = new ArrayList<>();
     }
 
     public List<Habitacion> get() {
-        return copiaProfundaHabitaciones();
+        List<Habitacion> listaHabitaciones = new ArrayList<>();
+        coleccionHabitaciones.find().forEach((docHabitacion) -> {
+            Habitacion habitacion = MongoDB.getHabitacion(docHabitacion);
+            listaHabitaciones.add(habitacion);
+        });
+        listaHabitaciones.sort(Comparator.comparing(Habitacion :: getIdentificador));
+
+        return listaHabitaciones;
     }
 
     public List<Habitacion> get(TipoHabitacion tipoHabitacion) {
-        List<Habitacion> copia = copiaProfundaHabitaciones();
-        List<Habitacion> habitacionesTipo = new ArrayList<>();
+        List<Habitacion> listaHabitaciones = new ArrayList<>();
+        coleccionHabitaciones.find(Filters.eq(tipoHabitacion)).forEach((docHabitacion) -> {
+            Habitacion habitacion = MongoDB.getHabitacion(docHabitacion);
+            listaHabitaciones.add(habitacion);
+        });
+        listaHabitaciones.sort(Comparator.comparing(Habitacion :: getIdentificador));
 
-        Iterator<Habitacion> iterador = coleccionHabitaciones.iterator();
-        int i = 0;
-        while (iterador.hasNext()) {
-            Habitacion habitacion = copia.get(i);
-            if (habitacion instanceof Simple && tipoHabitacion == TipoHabitacion.SIMPLE) {
-                habitacionesTipo.set(i, habitacion);
-            } else if (habitacion instanceof Doble && tipoHabitacion == TipoHabitacion.DOBLE) {
-                habitacionesTipo.set(i, habitacion);
-            }else if (habitacion instanceof Triple && tipoHabitacion == TipoHabitacion.TRIPLE) {
-                habitacionesTipo.set(i, habitacion);
-            }else if (habitacion instanceof Suite && tipoHabitacion == TipoHabitacion.SUITE) {
-                habitacionesTipo.set(i, habitacion);
-            }
-            i++;
-        }
-        return habitacionesTipo;
+        return listaHabitaciones;
     }
 
-    private List<Habitacion> copiaProfundaHabitaciones() {
-
-        List<Habitacion> copiaHabitaciones = new ArrayList<>();
-
-        Iterator<Habitacion> iterador = coleccionHabitaciones.iterator();
-        while (iterador.hasNext()) {
-            Habitacion habitacion = iterador.next();
-            if (habitacion instanceof Simple) {
-                copiaHabitaciones.add(new Simple((Simple) habitacion));
-            } else if (habitacion instanceof Doble) {
-                copiaHabitaciones.add(new Doble((Doble) habitacion));
-            } else if (habitacion instanceof Triple) {
-                copiaHabitaciones.add(new Triple((Triple) habitacion));
-            } else if (habitacion instanceof Suite) {
-                copiaHabitaciones.add(new Suite((Suite) habitacion));
-            }
-        }
-        return copiaHabitaciones;
-    }
+    public int getTamano() { return (int) coleccionHabitaciones.countDocuments(); }
 
     public void insertar(Habitacion habitacion) throws OperationNotSupportedException {
 
         if (habitacion == null) {
             throw new NullPointerException("ERROR: No se puede insertar una habitación nula.");
         }
-        if (coleccionHabitaciones.contains(habitacion)) {
-            throw new OperationNotSupportedException("ERROR: Ya existe una habitación con ese identificador.");
+
+        if (coleccionHabitaciones.find(Filters.eq(habitacion.getIdentificador())).first().isEmpty()) {
+            coleccionHabitaciones.insertOne(MongoDB.getDocumento(habitacion));
+        } else {
+            throw new NullPointerException("ERROR: Ya existe una habitación con ese identificador.");
         }
-        coleccionHabitaciones.add(habitacion);
     }
 
     public Habitacion buscar(Habitacion habitacion) {
@@ -77,10 +64,13 @@ public class Habitaciones implements IHabitaciones {
         if (habitacion == null) {
             throw new NullPointerException("ERROR: No se puede buscar una habitación nula.");
         }
-        if (coleccionHabitaciones.contains(habitacion)) {
-            int i = coleccionHabitaciones.indexOf(habitacion);
-            return coleccionHabitaciones.get(i);
+
+        Document documentoHabitacion = coleccionHabitaciones.find(MongoDB.getDocumento(habitacion)).first();
+
+        if (!documentoHabitacion.isEmpty()) {
+            return MongoDB.getHabitacion(documentoHabitacion);
         } else {
+            System.out.println("Habitación no encontrada");
             return null;
         }
     }
@@ -90,21 +80,20 @@ public class Habitaciones implements IHabitaciones {
             throw new NullPointerException("ERROR: No se puede borrar una habitación nula.");
         }
 
-        if (!coleccionHabitaciones.contains(habitacion)) {
+        Document documentoHabitacion = coleccionHabitaciones.find(Filters.eq(habitacion.getIdentificador())).first();
+
+        if (documentoHabitacion.isEmpty()) {
             throw new OperationNotSupportedException("ERROR: No existe ninguna habitación como la indicada.");
         }
-        coleccionHabitaciones.remove(habitacion);
+        coleccionHabitaciones.deleteOne(documentoHabitacion);
     }
-
-    public int getTamano() {
-        int counter = 0;
-        Iterator<Habitacion> iterador = coleccionHabitaciones.iterator();
-        while (iterador.hasNext()){
-            iterador.next();
-            counter++;
-        }
-        return counter;
+    public void comenzar(){
+        MongoDatabase database = MongoDB.getBD();
+        coleccionHabitaciones = database.getCollection(COLECCION);
+        System.out.println("Colección habitaciones obtenida");
     }
-    public void comenzar(){}
-    public void terminar(){}
+    public void terminar(){
+        MongoDB.cerrarConexion();
+        System.out.println("Conexión con MongoDB cerrada con éxito.");
+    }
 }
