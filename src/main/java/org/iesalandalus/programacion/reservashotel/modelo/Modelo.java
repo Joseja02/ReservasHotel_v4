@@ -4,9 +4,12 @@ import org.iesalandalus.programacion.reservashotel.modelo.dominio.Habitacion;
 import org.iesalandalus.programacion.reservashotel.modelo.dominio.Huesped;
 import org.iesalandalus.programacion.reservashotel.modelo.dominio.Reserva;
 import org.iesalandalus.programacion.reservashotel.modelo.dominio.TipoHabitacion;
+import org.iesalandalus.programacion.reservashotel.modelo.negocio.IFuenteDatos;
 import org.iesalandalus.programacion.reservashotel.modelo.negocio.IHabitaciones;
 import org.iesalandalus.programacion.reservashotel.modelo.negocio.IHuespedes;
 import org.iesalandalus.programacion.reservashotel.modelo.negocio.IReservas;
+import org.iesalandalus.programacion.reservashotel.modelo.negocio.memoria.FuenteDatosMemoria;
+import org.iesalandalus.programacion.reservashotel.modelo.negocio.mongodb.FuenteDatosMongoDB;
 import org.iesalandalus.programacion.reservashotel.modelo.negocio.mongodb.Huespedes;
 import org.iesalandalus.programacion.reservashotel.modelo.negocio.mongodb.Habitaciones;
 import org.iesalandalus.programacion.reservashotel.modelo.negocio.mongodb.Reservas;
@@ -15,19 +18,34 @@ import javax.naming.OperationNotSupportedException;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public class Modelo {
+public class Modelo implements IModelo {
     private IHuespedes huespedes;
     private IHabitaciones habitaciones;
     private IReservas reservas;
+    private IFuenteDatos fuenteDatos;
 
-    public Modelo(){}
+    public Modelo( FactoriaFuenteDatos factoriaFuenteDatos){ comenzar(); }
     public void comenzar() {
-        huespedes = new Huespedes();
-        habitaciones = new Habitaciones();
-        reservas = new Reservas();
+
+        if (fuenteDatos instanceof FuenteDatosMongoDB){
+            huespedes = new Huespedes();
+            habitaciones = new Habitaciones();
+            reservas = new Reservas();
+        }
+        if (fuenteDatos instanceof FuenteDatosMemoria){
+            huespedes = new org.iesalandalus.programacion.reservashotel.modelo.negocio.memoria.Huespedes();
+            habitaciones = new org.iesalandalus.programacion.reservashotel.modelo.negocio.memoria.Habitaciones();
+            reservas = new org.iesalandalus.programacion.reservashotel.modelo.negocio.memoria.Reservas();
+        }
+        huespedes.comenzar();
+        habitaciones.comenzar();
+        reservas.terminar();
     }
 
     public void terminar() {
+        huespedes.terminar();
+        habitaciones.terminar();
+        reservas.terminar();
         System.out.println("El modelo ha finalizado.");
     }
 
@@ -89,11 +107,12 @@ public class Modelo {
     public List<Reserva> getReservas(Huesped huesped) {
         return reservas.getReservas(huesped);
     }
-
     public List<Reserva> getReservas(TipoHabitacion tipoHabitacion) {
         return reservas.getReservas(tipoHabitacion);
     }
-
+    public List<Reserva> getReservas(Habitacion habitacion) {
+        return reservas.getReservas(habitacion);
+    }
     public List<Reserva> getReservasFuturas(Habitacion habitacion) {
         return reservas.getReservasFuturas(habitacion);
     }
@@ -104,5 +123,8 @@ public class Modelo {
 
     public void realizarCheckout(Reserva reserva, LocalDateTime fecha) {
         reservas.realizarCheckout(reserva, fecha);
+    }
+    private void setFuenteDatos(IFuenteDatos fuenteDatos) {
+        this.fuenteDatos = fuenteDatos;
     }
 }
