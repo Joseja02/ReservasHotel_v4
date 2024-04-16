@@ -106,16 +106,16 @@ public class Reservas implements IReservas {
         int i = 0;
         while (iterador.hasNext()) {
             Reserva reserva = get().get(i);
-            if (reserva.getHabitacion() instanceof Simple && tipoHabitacion == TipoHabitacion.SIMPLE){
+            if (reserva.getHabitacion() instanceof Simple && tipoHabitacion.equals(TipoHabitacion.SIMPLE)){
                 reservasHuesped.add(new Reserva(reserva));
             }
-            if (reserva.getHabitacion() instanceof Doble && tipoHabitacion == TipoHabitacion.DOBLE){
+            if (reserva.getHabitacion() instanceof Doble && tipoHabitacion.equals(TipoHabitacion.DOBLE)){
                 reservasHuesped.add(new Reserva(reserva));
             }
-            if (reserva.getHabitacion() instanceof Triple && tipoHabitacion == TipoHabitacion.TRIPLE){
+            if (reserva.getHabitacion() instanceof Triple && tipoHabitacion.equals(TipoHabitacion.TRIPLE)){
                 reservasHuesped.add(new Reserva(reserva));
             }
-            if (reserva.getHabitacion() instanceof Suite && tipoHabitacion == TipoHabitacion.SUITE){
+            if (reserva.getHabitacion() instanceof Suite && tipoHabitacion.equals(TipoHabitacion.SUITE)){
                 reservasHuesped.add(new Reserva(reserva));
             }
             i++;

@@ -10,7 +10,6 @@ public class FuenteDatosMemoria implements IFuenteDatos {
     public IHuespedes crearHuespedes() {
         return new Huespedes();
     }
-
     @Override
     public IHabitaciones crearHabitaciones() {
         return new Habitaciones();

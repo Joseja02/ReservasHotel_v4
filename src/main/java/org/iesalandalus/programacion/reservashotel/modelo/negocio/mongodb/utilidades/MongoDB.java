@@ -9,16 +9,20 @@ import org.iesalandalus.programacion.reservashotel.modelo.dominio.*;
 
 import javax.naming.OperationNotSupportedException;
 import javax.print.Doc;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 
 public class MongoDB {
     public static final DateTimeFormatter FORMATO_DIA = DateTimeFormatter.ofPattern("dd-MM-yyyy");
     public static final DateTimeFormatter FORMATO_DIA_HORA = DateTimeFormatter.ofPattern("dd-MM-yyy HH:mm");
 
 
-    private static final String SERVIDOR = "mongodb+srv://reservashotel:reservashotel-2024@reservashotel.alippb6.mongodb.net/?retryWrites=true&w=majority&appName=reservashotel";
+    private static final String SERVIDOR = "reservashotel.alippb6.mongodb.net/";
 
     private static final int PUERTO = 27017;
     private static final String BD = "reservashotel";
@@ -68,14 +72,16 @@ public class MongoDB {
         return conexion.getDatabase(BD);
     }
 
-    private static void establecerConexion(){
+    private static void establecerConexion()
+    {
+
         String connectionString;
         ServerApi serverApi;
         MongoClientSettings settings;
 
         if (!SERVIDOR.equals("localhost"))
         {
-            connectionString = "mongodb+srv://"+ USUARIO+ ":" + CONTRASENA + "@"+ SERVIDOR +"/?retryWrites=true&w=majority";
+            connectionString = "mongodb+srv://reservashotel:" + CONTRASENA + "@reservashotel.alippb6.mongodb.net/";
             serverApi = ServerApi.builder()
                     .version(ServerApiVersion.V1)
                     .build();
@@ -95,7 +101,9 @@ public class MongoDB {
                     .credential(credenciales)
                     .build();
         }
-        //Creamos la conexión con el servidor según el setting anterior
+
+
+        //Creamos la conexión con el serveridos según el setting anterior
         conexion = MongoClients.create(settings);
 
         try
@@ -131,13 +139,14 @@ public class MongoDB {
         String telefono = huesped.getTelefono();
         String correo = huesped.getCorreo();
         LocalDate fechaNacimiento = huesped.getFechaNacimiento();
-        return new Document().append(NOMBRE, nombre).append(DNI, dni).append(TELEFONO, telefono).append(CORREO, correo).append(FECHA_NACIMIENTO, fechaNacimiento);
+        return new Document().append(NOMBRE, nombre).append(DNI, dni).append(TELEFONO, telefono).append(CORREO, correo).append(FECHA_NACIMIENTO, fechaNacimiento.format(FORMATO_DIA));
     }
     public static Huesped getHuesped(Document documentoHuesped){
         if (documentoHuesped == null) {
             return null;
         }
-        return new Huesped(documentoHuesped.getString(NOMBRE), documentoHuesped.getString(DNI), documentoHuesped.getString(TELEFONO), documentoHuesped.getString(CORREO), (LocalDate) documentoHuesped.get(FECHA_NACIMIENTO));
+        LocalDate fechaLocalDate = LocalDate.parse(documentoHuesped.getString(FECHA_NACIMIENTO), FORMATO_DIA);
+        return new Huesped(documentoHuesped.getString(NOMBRE), documentoHuesped.getString(DNI), documentoHuesped.getString(CORREO), documentoHuesped.getString(TELEFONO), fechaLocalDate);
     }
     public static Document getDocumento(Habitacion habitacion){
         if (habitacion == null) {
@@ -197,11 +206,25 @@ public class MongoDB {
 
         Document dHabitacion = (Document) documentoReserva.get(HABITACION);
         Habitacion habitacion = getHabitacion(dHabitacion);
+        Regimen regimen = Regimen.SOLO_ALOJAMIENTO;
+
+        if (documentoReserva.get(REGIMEN).equals(Regimen.SOLO_ALOJAMIENTO.toString())){
+            regimen = Regimen.SOLO_ALOJAMIENTO;
+        }
+        if (documentoReserva.get(REGIMEN).equals(Regimen.ALOJAMIENTO_DESAYUNO.toString())){
+            regimen = Regimen.ALOJAMIENTO_DESAYUNO;
+        }
+        if (documentoReserva.get(REGIMEN).equals(Regimen.MEDIA_PENSION.toString())){
+            regimen = Regimen.MEDIA_PENSION;
+        }
+        if (documentoReserva.get(REGIMEN).equals(Regimen.PENSION_COMPLETA.toString())){
+            regimen = Regimen.PENSION_COMPLETA;
+        }
 
         LocalDate fechaInicioReserva = LocalDate.parse(documentoReserva.getString(FECHA_INICIO_RESERVA), FORMATO_DIA);
         LocalDate fechaFinReserva = LocalDate.parse(documentoReserva.getString(FECHA_FIN_RESERVA), FORMATO_DIA);
 
-        return new Reserva(huesped, habitacion,(Regimen) documentoReserva.get(REGIMEN), fechaInicioReserva, fechaFinReserva, documentoReserva.getInteger(NUMERO_PERSONAS));
+        return new Reserva(huesped, habitacion, regimen, fechaInicioReserva, fechaFinReserva, documentoReserva.getInteger(NUMERO_PERSONAS));
     }
     public static Document getDocumento(Reserva reserva){
         if (reserva == null) {
@@ -209,6 +232,9 @@ public class MongoDB {
         }
         Huesped huesped = reserva.getHuesped();
         Habitacion habitacion = reserva.getHabitacion();
+
+        Document dHuesped = getDocumento(huesped);
+        Document dHabitacion = getDocumento(habitacion);
         Regimen regimen = reserva.getRegimen();
         LocalDate fechaInicioReserva = reserva.getFechaInicioReserva();
         LocalDate fechaFinReserva = reserva.getFechaFinReserva();
@@ -217,7 +243,7 @@ public class MongoDB {
         double precioReserva = reserva.getPrecio();
         int numeroPersonas = reserva.getNumeroPersonas();
 
-        return new Document().append(HUESPED, huesped).append(HABITACION, habitacion).append(REGIMEN, regimen).append(FECHA_INICIO_RESERVA, fechaInicioReserva).append(FECHA_FIN_RESERVA, fechaFinReserva).append(CHECKIN, checkIn).append(CHECKOUT, checkOut).append(PRECIO_RESERVA, precioReserva).append(NUMERO_PERSONAS, numeroPersonas);
+        return new Document().append(HUESPED, dHuesped).append(HABITACION, dHabitacion).append(REGIMEN, regimen.toString()).append(FECHA_INICIO_RESERVA, fechaInicioReserva.format(FORMATO_DIA)).append(FECHA_FIN_RESERVA, fechaFinReserva.format(FORMATO_DIA)).append(CHECKIN, checkIn).append(CHECKOUT, checkOut).append(PRECIO_RESERVA, precioReserva).append(NUMERO_PERSONAS, numeroPersonas);
     }
 
 }

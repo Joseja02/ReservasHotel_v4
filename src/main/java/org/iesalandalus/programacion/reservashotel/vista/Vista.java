@@ -34,7 +34,7 @@ public class Vista {
     }
 
     public void terminar() {
-        System.out.print("¡Hasta luego! - Tarea Online 6 | Jose Javier Sierra Berdún");
+        System.out.print("¡Hasta luego! - Tarea Online 10 | Jose Javier Sierra Berdún");
     }
 
     public static void insertarHuesped() {

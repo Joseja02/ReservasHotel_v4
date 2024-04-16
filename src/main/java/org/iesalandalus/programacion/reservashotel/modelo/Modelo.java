@@ -24,22 +24,21 @@ public class Modelo implements IModelo {
     private IReservas reservas;
     private IFuenteDatos fuenteDatos;
 
-    public Modelo( FactoriaFuenteDatos factoriaFuenteDatos){ comenzar(); }
+    public Modelo( FactoriaFuenteDatos factoriaFuenteDatos){
+        if (factoriaFuenteDatos == FactoriaFuenteDatos.MEMORIA){
+            fuenteDatos = FactoriaFuenteDatos.MEMORIA.crear();
+            setFuenteDatos(fuenteDatos);
+        }
+        if (factoriaFuenteDatos == FactoriaFuenteDatos.MONGODB){
+            fuenteDatos = FactoriaFuenteDatos.MONGODB.crear();
+            setFuenteDatos(fuenteDatos);
+        }
+        comenzar();
+    }
     public void comenzar() {
-
-        if (fuenteDatos instanceof FuenteDatosMongoDB){
-            huespedes = new Huespedes();
-            habitaciones = new Habitaciones();
-            reservas = new Reservas();
-        }
-        if (fuenteDatos instanceof FuenteDatosMemoria){
-            huespedes = new org.iesalandalus.programacion.reservashotel.modelo.negocio.memoria.Huespedes();
-            habitaciones = new org.iesalandalus.programacion.reservashotel.modelo.negocio.memoria.Habitaciones();
-            reservas = new org.iesalandalus.programacion.reservashotel.modelo.negocio.memoria.Reservas();
-        }
-        huespedes.comenzar();
-        habitaciones.comenzar();
-        reservas.terminar();
+            huespedes = fuenteDatos.crearHuespedes();
+            habitaciones = fuenteDatos.crearHabitaciones();
+            reservas = fuenteDatos.crearReservas();
     }
 
     public void terminar() {

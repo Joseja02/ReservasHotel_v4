@@ -20,6 +20,7 @@ public class Habitaciones implements IHabitaciones {
     private final String COLECCION = "habitaciones";
 
     public Habitaciones() {
+        comenzar();
     }
 
     public List<Habitacion> get() {
@@ -34,6 +35,11 @@ public class Habitaciones implements IHabitaciones {
     }
 
     public List<Habitacion> get(TipoHabitacion tipoHabitacion) {
+
+        if (tipoHabitacion == null){
+            throw new NullPointerException("ERROR: El tipo de habitación no puede ser nulo");
+        }
+
         List<Habitacion> listaHabitaciones = new ArrayList<>();
         coleccionHabitaciones.find(Filters.eq(tipoHabitacion)).forEach((docHabitacion) -> {
             Habitacion habitacion = MongoDB.getHabitacion(docHabitacion);
@@ -52,10 +58,17 @@ public class Habitaciones implements IHabitaciones {
             throw new NullPointerException("ERROR: No se puede insertar una habitación nula.");
         }
 
-        if (coleccionHabitaciones.find(Filters.eq(habitacion.getIdentificador())).first().isEmpty()) {
+        Document documentoHabitacionColeccion = coleccionHabitaciones.find(Filters.eq("identificador", habitacion.getIdentificador())).first();
+        Document documentoHabitacionParametro = MongoDB.getDocumento(habitacion);
+
+        if (documentoHabitacionColeccion == null){
             coleccionHabitaciones.insertOne(MongoDB.getDocumento(habitacion));
         } else {
-            throw new NullPointerException("ERROR: Ya existe una habitación con ese identificador.");
+            if (documentoHabitacionColeccion.get("identificador").equals(documentoHabitacionParametro.get("identificador"))) {
+                throw new OperationNotSupportedException("ERROR: Ya existe una habitación con ese identificador.");
+            } else {
+                coleccionHabitaciones.insertOne(MongoDB.getDocumento(habitacion));
+            }
         }
     }
 
@@ -65,12 +78,16 @@ public class Habitaciones implements IHabitaciones {
             throw new NullPointerException("ERROR: No se puede buscar una habitación nula.");
         }
 
-        Document documentoHabitacion = coleccionHabitaciones.find(MongoDB.getDocumento(habitacion)).first();
+        Document documentoHabitacionColeccion = coleccionHabitaciones.find(Filters.eq("identificador", habitacion.getIdentificador())).first();
+        Document documentoHabitacionParametro = MongoDB.getDocumento(habitacion);
 
-        if (!documentoHabitacion.isEmpty()) {
-            return MongoDB.getHabitacion(documentoHabitacion);
+        if (documentoHabitacionColeccion == null){
+            return null;
+        }
+
+        if (documentoHabitacionColeccion.get("identificador").equals(documentoHabitacionParametro.get("identificador"))) {
+            return MongoDB.getHabitacion(documentoHabitacionColeccion);
         } else {
-            System.out.println("Habitación no encontrada");
             return null;
         }
     }
@@ -79,18 +96,19 @@ public class Habitaciones implements IHabitaciones {
         if (habitacion == null) {
             throw new NullPointerException("ERROR: No se puede borrar una habitación nula.");
         }
+        Document documentoHabitacionColeccion = coleccionHabitaciones.find(Filters.eq("identificador", habitacion.getIdentificador())).first();
+        Document documentoHabitacionParametro = MongoDB.getDocumento(habitacion);
 
-        Document documentoHabitacion = coleccionHabitaciones.find(Filters.eq(habitacion.getIdentificador())).first();
-
-        if (documentoHabitacion.isEmpty()) {
+        if(documentoHabitacionColeccion == null){
             throw new OperationNotSupportedException("ERROR: No existe ninguna habitación como la indicada.");
         }
-        coleccionHabitaciones.deleteOne(documentoHabitacion);
+        if (documentoHabitacionColeccion.get("identificador").equals(documentoHabitacionParametro.get("identificador"))) {
+            coleccionHabitaciones.deleteOne(documentoHabitacionColeccion);
+        }
     }
     public void comenzar(){
         MongoDatabase database = MongoDB.getBD();
         coleccionHabitaciones = database.getCollection(COLECCION);
-        System.out.println("Colección habitaciones obtenida");
     }
     public void terminar(){
         MongoDB.cerrarConexion();

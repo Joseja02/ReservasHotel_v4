@@ -96,10 +96,10 @@ public final class Consola {
         System.out.print("Introduzca tipo de habitación: ");
         tipoHabitacion = leerTipoHabitacion();
 
-        if (tipoHabitacion == TipoHabitacion.SIMPLE){
+        if (tipoHabitacion.equals(TipoHabitacion.SIMPLE)){
             habitacion =  new Simple(planta, puerta, precio);
         }
-        if (tipoHabitacion == TipoHabitacion.DOBLE){
+        if (tipoHabitacion.equals(TipoHabitacion.DOBLE)){
             int numCamasIndividuales;
             int numCamasDobles;
 
@@ -110,7 +110,7 @@ public final class Consola {
 
             habitacion = new Doble(planta, puerta, precio, numCamasIndividuales, numCamasDobles);
         }
-        if (tipoHabitacion == TipoHabitacion.TRIPLE){
+        if (tipoHabitacion.equals(TipoHabitacion.TRIPLE)){
             int numCamasIndividuales;
             int numCamasDobles;
             int numBanos;
@@ -124,7 +124,7 @@ public final class Consola {
 
             habitacion = new Triple(planta, puerta, precio, numBanos, numCamasIndividuales, numCamasDobles);
         }
-        if (tipoHabitacion == TipoHabitacion.SUITE){
+        if (tipoHabitacion.equals(TipoHabitacion.SUITE)){
             int numBanos;
             boolean tieneJacuzzi = false;
 
@@ -164,16 +164,16 @@ public final class Consola {
         System.out.print("Introduzca tipo de habitación: ");
         tipoHabitacion = leerTipoHabitacion();
 
-        if (tipoHabitacion == TipoHabitacion.SIMPLE){
+        if (tipoHabitacion.equals(TipoHabitacion.SIMPLE)){
             habitacion = new Simple(planta, puerta, 0);
         }
-        if (tipoHabitacion == TipoHabitacion.DOBLE){
+        if (tipoHabitacion.equals(TipoHabitacion.DOBLE)){
             habitacion = new Doble(planta, puerta, 0, 2, 0);
         }
-        if (tipoHabitacion == TipoHabitacion.TRIPLE){
+        if (tipoHabitacion.equals(TipoHabitacion.TRIPLE)){
             habitacion = new Triple(planta, puerta, 0, 1, 3, 0);
         }
-        if (tipoHabitacion == TipoHabitacion.SUITE){
+        if (tipoHabitacion.equals(TipoHabitacion.SUITE)){
             habitacion = new Suite(planta, puerta, 0, 1, false);
         }
         return habitacion;

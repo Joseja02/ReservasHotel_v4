@@ -19,7 +19,7 @@ public class Huespedes implements IHuespedes {
     private final String COLECCION = "huespedes";
 
     public Huespedes() {
-
+        comenzar();
     }
 
     public List<Huesped> get() {
@@ -41,10 +41,17 @@ public class Huespedes implements IHuespedes {
             throw new NullPointerException("ERROR: No se puede insertar un huésped nulo.");
         }
 
-        if (coleccionHuespedes.find(Filters.eq(huesped.getDni())).first().isEmpty()) {
+        Document documentoHuespedColeccion = coleccionHuespedes.find(Filters.eq("dni", huesped.getDni())).first();
+        Document documentoHuespedParametro = MongoDB.getDocumento(huesped);
+
+        if (documentoHuespedColeccion == null){
             coleccionHuespedes.insertOne(MongoDB.getDocumento(huesped));
         } else {
-            throw new OperationNotSupportedException("ERROR: Ya existe un huésped con ese dni.");
+            if (documentoHuespedColeccion.get("dni").equals(documentoHuespedParametro.get("dni"))) {
+                throw new OperationNotSupportedException("ERROR: No existe ningún huésped como el indicado.");
+            } else {
+                coleccionHuespedes.insertOne(MongoDB.getDocumento(huesped));
+            }
         }
     }
 
@@ -53,12 +60,16 @@ public class Huespedes implements IHuespedes {
             throw new NullPointerException("ERROR: No se puede buscar un huésped nulo.");
         }
 
-        Document documentoHuesped = coleccionHuespedes.find(MongoDB.getDocumento(huesped)).first();
+        Document documentoHuespedColeccion = coleccionHuespedes.find(Filters.eq("dni", huesped.getDni())).first();
+        Document documentoHuespedParametro = MongoDB.getDocumento(huesped);
 
-        if (!documentoHuesped.isEmpty()) {
-            return MongoDB.getHuesped(documentoHuesped);
+        if (documentoHuespedColeccion == null){
+            return null;
+        }
+
+        if (documentoHuespedColeccion.get("dni").equals(documentoHuespedParametro.get("dni"))) {
+            return MongoDB.getHuesped(documentoHuespedColeccion);
         } else {
-            System.out.println("Huésped no encontrado");
             return null;
         }
     }
@@ -69,12 +80,15 @@ public class Huespedes implements IHuespedes {
             throw new NullPointerException("ERROR: No se puede borrar un huésped nulo.");
         }
 
-        Document documentoHuesped = coleccionHuespedes.find(Filters.eq(huesped.getDni())).first();
+        Document documentoHuespedColeccion = coleccionHuespedes.find(Filters.eq("dni", huesped.getDni())).first();
+        Document documentoHuespedParametro = MongoDB.getDocumento(huesped);
 
-        if (documentoHuesped.isEmpty()) {
+        if(documentoHuespedColeccion == null){
             throw new OperationNotSupportedException("ERROR: No existe ningún huésped como el indicado.");
         }
-        coleccionHuespedes.deleteOne(documentoHuesped);
+        if (documentoHuespedColeccion.get("dni").equals(documentoHuespedParametro.get("dni"))) {
+            coleccionHuespedes.deleteOne(documentoHuespedColeccion);
+        }
     }
     public void comenzar(){
         MongoDatabase database = MongoDB.getBD();

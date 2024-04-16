@@ -3,6 +3,7 @@ package org.iesalandalus.programacion.reservashotel;
 
 import org.iesalandalus.programacion.reservashotel.controlador.Controlador;
 import org.iesalandalus.programacion.reservashotel.modelo.FactoriaFuenteDatos;
+import org.iesalandalus.programacion.reservashotel.modelo.IModelo;
 import org.iesalandalus.programacion.reservashotel.modelo.Modelo;
 import org.iesalandalus.programacion.reservashotel.modelo.dominio.Regimen;
 import org.iesalandalus.programacion.reservashotel.modelo.dominio.TipoHabitacion;

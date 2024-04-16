@@ -1,9 +1,11 @@
 package org.iesalandalus.programacion.reservashotel.modelo.negocio.mongodb;
 
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.iesalandalus.programacion.reservashotel.modelo.dominio.*;
 import org.iesalandalus.programacion.reservashotel.modelo.negocio.IReservas;
 import org.iesalandalus.programacion.reservashotel.modelo.negocio.mongodb.utilidades.MongoDB;
@@ -21,6 +23,7 @@ public class Reservas implements IReservas {
     private final String COLECCION = "reservas";
 
     public Reservas() {
+        comenzar();
     }
 
     public List<Reserva> get() {
@@ -41,10 +44,22 @@ public class Reservas implements IReservas {
             throw new NullPointerException("ERROR: No se puede insertar una reserva nula.");
         }
 
-        if (coleccionReservas.find(Filters.eq(reserva.getHabitacion().getIdentificador(), reserva.getFechaInicioReserva())).first().isEmpty()) {
+        Bson filtro = Filters.and(
+                Filters.eq("habitacion.identificador", reserva.getHabitacion().getIdentificador()),
+                Filters.eq("fecha_inicio_reserva", reserva.getFechaInicioReserva().format(MongoDB.FORMATO_DIA))
+        );
+
+        Document documentoReservaColeccion = coleccionReservas.find(filtro).first();
+        Document documentoReservaParametro = MongoDB.getDocumento(reserva);
+
+        if (documentoReservaColeccion == null){
             coleccionReservas.insertOne(MongoDB.getDocumento(reserva));
         } else {
-            throw new OperationNotSupportedException("ERROR: Ya existe una reserva igual.");
+            if (documentoReservaColeccion.get("habitacion").equals(documentoReservaParametro.get("habitacion")) && documentoReservaColeccion.get("fecha_inicio_reserva").equals(documentoReservaParametro.get("fecha_inicio_reserva"))) {
+                throw new OperationNotSupportedException("ERROR: Ya existe una reserva igual.");
+            } else {
+                coleccionReservas.insertOne(MongoDB.getDocumento(reserva));
+            }
         }
     }
 
@@ -54,12 +69,21 @@ public class Reservas implements IReservas {
             throw new NullPointerException("ERROR: No se puede buscar una reserva nula.");
         }
 
-        Document documentoReserva = coleccionReservas.find(Filters.eq(reserva.getHabitacion().getIdentificador(), reserva.getFechaInicioReserva())).first();
+        Bson filtro = Filters.and(
+                Filters.eq("habitacion.identificador", reserva.getHabitacion().getIdentificador()),
+                Filters.eq("fecha_inicio_reserva", reserva.getFechaInicioReserva().format(MongoDB.FORMATO_DIA))
+        );
 
-        if (!documentoReserva.isEmpty()) {
-            return MongoDB.getReserva(documentoReserva);
+        Document documentoReservaColeccion = coleccionReservas.find(filtro).first();
+        Document documentoReservaParametro = MongoDB.getDocumento(reserva);
+
+        if (documentoReservaColeccion == null){
+            return null;
+        }
+
+        if (documentoReservaColeccion.get("habitacion").equals(documentoReservaParametro.get("habitacion")) && documentoReservaColeccion.get("fecha_inicio_reserva").equals(documentoReservaParametro.get("fecha_inicio_reserva"))) {
+            return MongoDB.getReserva(documentoReservaColeccion);
         } else {
-            System.out.println("Reserva no encontrada");
             return null;
         }
     }
@@ -69,12 +93,20 @@ public class Reservas implements IReservas {
             throw new NullPointerException("ERROR: No se puede borrar una reserva nula.");
         }
 
-        Document documentoReserva = coleccionReservas.find(Filters.eq(reserva.getHabitacion().getIdentificador(), reserva.getFechaInicioReserva())).first();
+        Bson filtro = Filters.and(
+                Filters.eq("habitacion.identificador", reserva.getHabitacion().getIdentificador()),
+                Filters.eq("fecha_inicio_reserva", reserva.getFechaInicioReserva().format(MongoDB.FORMATO_DIA))
+        );
 
-        if (documentoReserva.isEmpty()) {
+        Document documentoReservaColeccion = coleccionReservas.find(filtro).first();
+        Document documentoReservaParametro = MongoDB.getDocumento(reserva);
+
+        if (documentoReservaColeccion == null) {
             throw new OperationNotSupportedException("ERROR: No existe ninguna reserva como la indicada.");
         }
-        coleccionReservas.deleteOne(documentoReserva);
+        if (documentoReservaColeccion.get("habitacion").equals(documentoReservaParametro.get("habitacion")) && documentoReservaColeccion.get("fecha_inicio_reserva").equals(documentoReservaParametro.get("fecha_inicio_reserva"))) {
+            coleccionReservas.deleteOne(documentoReservaColeccion);
+        }
     }
 
     public List<Reserva> getReservas(Huesped huesped) {

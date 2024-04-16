@@ -14,5 +14,6 @@ public enum FactoriaFuenteDatos {
         public IFuenteDatos crear(){
             return new FuenteDatosMongoDB();
         }
-    }
+    };
+    public abstract IFuenteDatos crear();
 }

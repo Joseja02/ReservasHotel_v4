@@ -20,6 +20,11 @@ public class Habitaciones implements IHabitaciones {
     }
 
     public List<Habitacion> get(TipoHabitacion tipoHabitacion) {
+
+        if (tipoHabitacion == null){
+            throw new NullPointerException("ERROR: El tipo de habitación no puede ser nulo");
+        }
+
         List<Habitacion> copia = copiaProfundaHabitaciones();
         List<Habitacion> habitacionesTipo = new ArrayList<>();
 
@@ -27,13 +32,13 @@ public class Habitaciones implements IHabitaciones {
         int i = 0;
         while (iterador.hasNext()) {
             Habitacion habitacion = copia.get(i);
-            if (habitacion instanceof Simple && tipoHabitacion == TipoHabitacion.SIMPLE) {
+            if (habitacion instanceof Simple && tipoHabitacion.equals(TipoHabitacion.SIMPLE)) {
                 habitacionesTipo.set(i, habitacion);
-            } else if (habitacion instanceof Doble && tipoHabitacion == TipoHabitacion.DOBLE) {
+            } else if (habitacion instanceof Doble && tipoHabitacion.equals(TipoHabitacion.DOBLE)) {
                 habitacionesTipo.set(i, habitacion);
-            }else if (habitacion instanceof Triple && tipoHabitacion == TipoHabitacion.TRIPLE) {
+            }else if (habitacion instanceof Triple && tipoHabitacion.equals(TipoHabitacion.TRIPLE)) {
                 habitacionesTipo.set(i, habitacion);
-            }else if (habitacion instanceof Suite && tipoHabitacion == TipoHabitacion.SUITE) {
+            }else if (habitacion instanceof Suite && tipoHabitacion.equals(TipoHabitacion.SUITE)) {
                 habitacionesTipo.set(i, habitacion);
             }
             i++;

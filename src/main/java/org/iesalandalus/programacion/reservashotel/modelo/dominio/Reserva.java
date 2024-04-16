@@ -57,10 +57,22 @@ public class Reserva {
         if (huesped == null) {
             throw new NullPointerException("ERROR: El huésped de una reserva no puede ser nulo.");
         }
-        this.huesped = huesped;
+        this.huesped = new Huesped(huesped);
     }
 
     public Habitacion getHabitacion() {
+        if (habitacion instanceof Simple){
+            return new Simple(habitacion.getPlanta(), habitacion.getPuerta(), habitacion.getPrecio());
+        }
+        if (habitacion instanceof Doble){
+            return new Doble(habitacion.getPlanta(), habitacion.getPuerta(), habitacion.getPrecio(), ((Doble) habitacion).getNumCamasIndividuales(), ((Doble) habitacion).getNumCamasDobles());
+        }
+        if (habitacion instanceof Triple){
+           return new Triple(habitacion.getPlanta(), habitacion.getPuerta(), habitacion.getPrecio(), ((Triple) habitacion).getNumBanos(), ((Triple) habitacion).getNumCamasIndividuales(), ((Triple) habitacion).getNumCamasDobles());
+        }
+        if (habitacion instanceof Suite){
+            return new Suite(habitacion.getPlanta(), habitacion.getPuerta(), habitacion.getPrecio(), ((Suite) habitacion).getNumBanos(), ((Suite) habitacion).isTieneJacuzzi());
+        }
         return habitacion;
     }
 

@@ -1,8 +1,10 @@
-﻿<component name="ProjectRunConfigurationManager">
+<component name="ProjectRunConfigurationManager">
   <configuration default="false" name="MainApp" type="Application" factoryName="Application" nameIsGenerated="true">
     <option name="ALTERNATIVE_JRE_PATH" value="17" />
     <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
     <option name="MAIN_CLASS_NAME" value="org.iesalandalus.programacion.reservashotel.MainApp" />
+    <module name="ReservasHotel_v4.main" />
+    <option name="PROGRAM_PARAMETERS" value="-fdmongodb" />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value="org.iesalandalus.programacion.reservashotel.*" />
