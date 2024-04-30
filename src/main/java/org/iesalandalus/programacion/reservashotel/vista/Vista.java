@@ -165,26 +165,10 @@ public class Vista {
         }
     }
 
-    public static void insertarReserva() {
+    public static void  insertarReserva() {
         try {
             Reserva reserva = Consola.leerReserva();
-            Habitacion habitacionReserva = reserva.getHabitacion();
-            TipoHabitacion tipoHabitacionReserva = null;
-
-            if (habitacionReserva instanceof Simple){
-                tipoHabitacionReserva = TipoHabitacion.SIMPLE;
-            }
-            if (habitacionReserva instanceof Doble){
-                tipoHabitacionReserva = TipoHabitacion.DOBLE;
-            }
-            if (habitacionReserva instanceof Triple){
-                tipoHabitacionReserva = TipoHabitacion.TRIPLE;
-            }
-            if (habitacionReserva instanceof Suite){
-                tipoHabitacionReserva = TipoHabitacion.SUITE;
-            }
-
-            Habitacion habitacionDisponible = consultarDisponibilidad(tipoHabitacionReserva, reserva.getFechaInicioReserva(), reserva.getFechaFinReserva());
+            Habitacion habitacionDisponible = consultarDisponibilidad(TipoHabitacion.valueOf(String.valueOf(reserva.getHabitacion())), reserva.getFechaInicioReserva(), reserva.getFechaFinReserva());
 
             if (habitacionDisponible != null) {
                 Reserva reservaExistente = controlador.buscar(reserva);
@@ -438,6 +422,7 @@ public class Vista {
 
         if (habitacionesTipoSolicitado == null)
             return habitacionDisponible;
+
         for (int i = 0; i < habitacionesTipoSolicitado.size() && !tipoHabitacionEncontrada; i++) {
 
             if (habitacionesTipoSolicitado.get(i) != null) {

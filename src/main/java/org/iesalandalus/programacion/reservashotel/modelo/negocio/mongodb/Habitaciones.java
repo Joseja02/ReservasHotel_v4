@@ -39,27 +39,14 @@ public class Habitaciones implements IHabitaciones {
         if (tipoHabitacion == null){
             throw new NullPointerException("ERROR: El tipo de habitación no puede ser nulo");
         }
-        String tipoHabitacionString = "";
-
-        if (tipoHabitacion.equals(TipoHabitacion.SIMPLE)){
-            tipoHabitacionString = "SIMPLE";
-        }
-        if (tipoHabitacion.equals(TipoHabitacion.DOBLE)){
-            tipoHabitacionString = "DOBLE";
-        }
-        if (tipoHabitacion.equals(TipoHabitacion.TRIPLE)){
-            tipoHabitacionString = "TRIPLE";
-        }
-        if (tipoHabitacion.equals(TipoHabitacion.SUITE)){
-            tipoHabitacionString = "SUITE";
-        }
 
         List<Habitacion> listaHabitaciones = new ArrayList<>();
-        coleccionHabitaciones.find(Filters.eq("tipo", tipoHabitacionString)).forEach((docHabitacion) -> {
+        coleccionHabitaciones.find(Filters.eq(tipoHabitacion)).forEach((docHabitacion) -> {
             Habitacion habitacion = MongoDB.getHabitacion(docHabitacion);
             listaHabitaciones.add(habitacion);
         });
         listaHabitaciones.sort(Comparator.comparing(Habitacion :: getIdentificador));
+
         return listaHabitaciones;
     }
 
