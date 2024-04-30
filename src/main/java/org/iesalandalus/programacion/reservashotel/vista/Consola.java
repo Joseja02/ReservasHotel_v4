@@ -155,26 +155,27 @@ public final class Consola {
         Habitacion habitacion = null;
         int planta;
         int puerta;
+        double precio;
         TipoHabitacion tipoHabitacion;
 
-        System.out.print("Introduzca planta de habitación: ");
+        System.out.print("Introduzca planta de la habitación: ");
         planta = Entrada.entero();
-        System.out.print("Introduzca puerta de habitación: ");
+        System.out.print("Introduzca puerta de la habitación: ");
         puerta = Entrada.entero();
         System.out.print("Introduzca tipo de habitación: ");
         tipoHabitacion = leerTipoHabitacion();
 
         if (tipoHabitacion.equals(TipoHabitacion.SIMPLE)){
-            habitacion = new Simple(planta, puerta, 0);
+            habitacion = new Simple(planta, puerta, 40);
         }
         if (tipoHabitacion.equals(TipoHabitacion.DOBLE)){
-            habitacion = new Doble(planta, puerta, 0, 2, 0);
+            habitacion = new Doble(planta, puerta, 50, 2, 0);
         }
         if (tipoHabitacion.equals(TipoHabitacion.TRIPLE)){
-            habitacion = new Triple(planta, puerta, 0, 1, 3, 0);
+            habitacion = new Triple(planta, puerta, 60, 1, 3, 0);
         }
         if (tipoHabitacion.equals(TipoHabitacion.SUITE)){
-            habitacion = new Suite(planta, puerta, 0, 1, false);
+            habitacion = new Suite(planta, puerta, 70, 1, false);
         }
         return habitacion;
     }
