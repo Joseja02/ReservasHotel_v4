@@ -5,7 +5,7 @@ public enum Opcion {
     SALIR("Salir") {
         @Override
         public void ejecutar() {
-            System.out.print("¡Hasta luego! - Tarea Online 6 | Jose Javier Sierra Berdún");
+            System.out.print("¡Hasta luego! - Tarea Online 10 | Jose Javier Sierra Berdún");
         }
     },
     INSERTAR_HUESPED("Insertar Huésped") {

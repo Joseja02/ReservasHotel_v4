@@ -14,7 +14,7 @@ public class Reserva {
     public static final int MAX_NUMERO_MESES_RESERVA = 6;
     private static final int MAX_HORAS_POSTERIOR_CHECKOUT = 12;
     public static final String FORMATO_FECHA_RESERVA = "dd/MM/yyyy";
-    public static final String FORMATO_FECHA_HORA_RESERVA = "dd/MM/yyyy HH/mm";
+    public static final String FORMATO_FECHA_HORA_RESERVA = "dd/MM/yyyy HH:mm";
     private Huesped huesped;
     private Habitacion habitacion;
     private Regimen regimen;
@@ -151,6 +151,7 @@ public class Reserva {
         if (checkIn.isBefore(fechaInicioReserva.atStartOfDay())) {
             throw new IllegalArgumentException("ERROR: El checkin de una reserva no puede ser anterior a la fecha de inicio de la reserva.");
         }
+
         this.checkIn = checkIn;
     }
 

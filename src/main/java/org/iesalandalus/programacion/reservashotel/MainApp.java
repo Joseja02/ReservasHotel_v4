@@ -13,13 +13,13 @@ public class MainApp {
     public static void main(String[] args) {
 
         Vista vista = new Vista();
-        Modelo modelo = procesarArgumentosFuenteDatos(args[0]);
+        IModelo modelo = procesarArgumentosFuenteDatos(args[0]);
         Controlador controlador = new Controlador(modelo, vista);
         controlador.comenzar();
     }
 
-    private static Modelo procesarArgumentosFuenteDatos(String args){
-        Modelo modelo = new Modelo(FactoriaFuenteDatos.MEMORIA);
+    private static IModelo procesarArgumentosFuenteDatos(String args){
+        IModelo modelo = new Modelo(FactoriaFuenteDatos.MEMORIA);
         if (args.equals("-fdmemoria")){
             modelo = new Modelo(FactoriaFuenteDatos.MEMORIA);
         }

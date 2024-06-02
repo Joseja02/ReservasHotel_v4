@@ -17,7 +17,7 @@ public class Controlador {
     private IModelo modelo;
     private Vista vista;
 
-    public Controlador(Modelo modelo, Vista vista) {
+    public Controlador(IModelo modelo, Vista vista) {
         if (modelo == null) {
             throw new NullPointerException("ERROR: El modelo no puede ser nulo");
         }

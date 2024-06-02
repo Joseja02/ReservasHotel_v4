@@ -165,6 +165,17 @@ public class Reservas implements IReservas {
             throw new NullPointerException("ERROR: La fecha de un Checkin no puede ser nula.");
         }
         reserva.setCheckIn(fecha);
+        Iterator<Reserva> iterador = coleccionReservas.iterator();
+        int i = 0;
+        boolean reservaEncontrada = false;
+        while (iterador.hasNext() && !reservaEncontrada) {
+            Reserva reservaIterator = iterador.next();
+            if (reservaIterator.equals(reserva)){
+                coleccionReservas.set(i, reserva);
+                reservaEncontrada = true;
+            }
+            i++;
+        }
     }
 
     public void realizarCheckout(Reserva reserva, LocalDateTime fecha) {
@@ -175,9 +186,20 @@ public class Reservas implements IReservas {
             throw new NullPointerException("ERROR: La fecha de un Checkout no puede ser nula.");
         }
         if (reserva.getCheckIn() == null){
-            throw new IllegalArgumentException("ERROR: No se puede realizar el Checkout sin haber hecho antes el Checkin.");
+            throw new NullPointerException("ERROR: No se puede realizar el Checkout sin haber hecho antes el Checkin.");
         }
         reserva.setCheckOut(fecha);
+        Iterator<Reserva> iterador = coleccionReservas.iterator();
+        int i = 0;
+        boolean reservaEncontrada = false;
+        while (iterador.hasNext() && !reservaEncontrada) {
+            Reserva reservaIterator = iterador.next();
+            if (reservaIterator.equals(reserva)){
+                coleccionReservas.set(i, reserva);
+                reservaEncontrada = true;
+            }
+            i++;
+        }
     }
     public void comenzar() {
 

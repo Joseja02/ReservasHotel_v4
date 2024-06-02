@@ -4,6 +4,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Updates;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.iesalandalus.programacion.reservashotel.modelo.dominio.*;
@@ -115,13 +116,11 @@ public class Reservas implements IReservas {
         }
         List<Reserva> reservasHuesped = new ArrayList<>();
         Iterator<Reserva> iterador = get().iterator();
-        int i = 0;
         while (iterador.hasNext()) {
-            Reserva reserva = get().get(i);
+            Reserva reserva = iterador.next();
             if (reserva.getHuesped().getDni().equals(huesped.getDni())) {
                 reservasHuesped.add(new Reserva(reserva));
             }
-            i++;
         }
         return reservasHuesped;
     }
@@ -132,9 +131,8 @@ public class Reservas implements IReservas {
         }
         List<Reserva> reservasHuesped = new ArrayList<>();
         Iterator<Reserva> iterador = get().iterator();
-        int i = 0;
         while (iterador.hasNext()) {
-            Reserva reserva = get().get(i);
+            Reserva reserva = iterador.next();
             if (reserva.getHabitacion() instanceof Simple && tipoHabitacion == TipoHabitacion.SIMPLE){
                 reservasHuesped.add(new Reserva(reserva));
             }
@@ -147,7 +145,6 @@ public class Reservas implements IReservas {
             if (reserva.getHabitacion() instanceof Suite && tipoHabitacion == TipoHabitacion.SUITE){
                 reservasHuesped.add(new Reserva(reserva));
             }
-            i++;
         }
         return reservasHuesped;
     }
@@ -160,14 +157,12 @@ public class Reservas implements IReservas {
 
         List<Reserva> reservasHabitacion = new ArrayList<>();
         Iterator<Reserva> iterador = get().iterator();
-        int i = 0;
 
         while (iterador.hasNext()) {
-            Reserva reserva = get().get(i);
+            Reserva reserva = iterador.next();
             if (reserva.getHabitacion().getIdentificador().equals(habitacion.getIdentificador())) {
                 reservasHabitacion.add(new Reserva(reserva));
             }
-            i++;
         }
         return reservasHabitacion;
     }
@@ -178,14 +173,12 @@ public class Reservas implements IReservas {
 
         List<Reserva> reservasHuesped = new ArrayList<>();
         Iterator<Reserva> iterador = get().iterator();
-        int i = 0;
         while (iterador.hasNext()){
-            Reserva reserva = get().get(i);
+            Reserva reserva = iterador.next();
             if (reserva.getHabitacion().getIdentificador().equals(habitacion.getIdentificador()) &&
                     reserva.getFechaInicioReserva().isAfter(LocalDate.now())) {
                 reservasHuesped.add(new Reserva(reserva));
             }
-            i++;
         }
         return reservasHuesped;
     }
@@ -198,7 +191,15 @@ public class Reservas implements IReservas {
         if (fecha == null){
             throw new NullPointerException("ERROR: La fecha de un Checkin no puede ser nula.");
         }
+
+        Bson filtro = Filters.and(
+                Filters.eq("habitacion.identificador", reserva.getHabitacion().getIdentificador()),
+                Filters.eq("fecha_inicio_reserva", reserva.getFechaInicioReserva().format(MongoDB.FORMATO_DIA))
+        );
+
         reserva.setCheckIn(fecha);
+        coleccionReservas.updateOne(filtro, Updates.set(MongoDB.CHECKIN, reserva.getCheckIn().format(MongoDB.FORMATO_DIA_HORA)));
+
     }
 
     public void realizarCheckout(Reserva reserva, LocalDateTime fecha) {
@@ -211,12 +212,18 @@ public class Reservas implements IReservas {
         if (reserva.getCheckIn() == null){
             throw new IllegalArgumentException("ERROR: No se puede realizar el Checkout sin haber hecho antes el Checkin.");
         }
+
+        Bson filtro = Filters.and(
+                Filters.eq("habitacion.identificador", reserva.getHabitacion().getIdentificador()),
+                Filters.eq("fecha_inicio_reserva", reserva.getFechaInicioReserva().format(MongoDB.FORMATO_DIA))
+        );
+
         reserva.setCheckOut(fecha);
+        coleccionReservas.updateOne(filtro, Updates.set(MongoDB.CHECKOUT, reserva.getCheckOut().format(MongoDB.FORMATO_DIA_HORA)));
     }
     public void comenzar(){
         MongoDatabase database = MongoDB.getBD();
         coleccionReservas = database.getCollection(COLECCION);
-        System.out.println("Colección reservas obtenida");
     }
     public void terminar(){
         MongoDB.cerrarConexion();
